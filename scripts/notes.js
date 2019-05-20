@@ -1,0 +1,12 @@
+const express = require('express');
+const app = express();
+const port = 3000;
+const fs = require('fs');
+app.use('/css', express.static('../static'));
+const main = fs.readFileSync('../html/main.html').toString();
+const features = fs.readFileSync('../html/features.html').toString();
+const news = fs.readFileSync('../html/news.html').toString();
+app.get('/', (req, res) => res.send(main));
+app.listen(port, () => console.log('example app listening on port ' + port));
+app.get('/features', (req, res) => res.send(features));
+app.get('/news', (req, res) => res.send(news));

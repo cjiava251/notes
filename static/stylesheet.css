@@ -1,0 +1,33 @@
+.navigation {
+  padding: 5px;
+  border: 1px solid;
+  width: 330px;
+}
+.star {
+  color: red;
+}
+.home {
+    color: red;
+}
+.features {
+    color: red;
+}
+.news {
+    color: red;
+}
+.myNotes {
+  color: red;
+}
+.newUser {
+  color: red;
+}
+p {
+    color: green;
+    margin-bottom: 2px;
+}
+h1 {
+    color: blue;
+}
+h2 {
+    color: grey;
+}
