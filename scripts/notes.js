@@ -25,7 +25,7 @@ app.route('/new_user')
     if ((req.body.userName) && (req.body.familyName) && (req.body.name) && (req.body.email)) {
     db.serialize(() => {
       db.run('CREATE TABLE IF NOT EXISTS user (userName char(20), familyName char(20), name char(20), patronymic char(20), birthday date, email char(20), mobileNumber char(11), notesCount tinyint)');
-      let stmt = db.prepare('INSERT INTO user VALUES (?,?,?,?,?,?,?)', req.body.userName, req.body.familyName, req.body.name, req.body.patronymic, req.body.birthday, req.body.email, req.body.mobileNumber);
+      let stmt = db.prepare('INSERT INTO user VALUES (?,?,?,?,?,?,?,?)', req.body.userName, req.body.familyName, req.body.name, req.body.patronymic, req.body.birthday, req.body.email, req.body.mobileNumber,0);
       stmt.run();
       stmt.finalize();
       res.send('Пользователь ' + req.body.userName + ' успешно зарегистрирован');
@@ -43,15 +43,16 @@ app.route('/new_note')
     db.serialize(() => {
       db.run('CREATE TABLE IF NOT EXISTS notes (noteName text, noteText text, user char(20), tags char(20), likes tinyint, tagsCount tinyint)');
       let stmt = db.prepare('INSERT INTO notes (noteName,noteText) VALUES (?,?)', req.body.noteName, req.body.noteText);
-      updateTagsCount(req.body.noteName);
+     // updateTagsCount(req.body.noteName);
       stmt.run();
       stmt.finalize();
       res.send('Ваша заметка '+req.body.noteName+' успешно сохранена');
     });
   });
-
+/*
   function updateTagsCount(noteName) {
     db.serialize(() => {
       db.run('UPDATE notes SET tagsCount=tagsCount+1 WHERE noteName=?',noteName);
     });
   }
+*/
