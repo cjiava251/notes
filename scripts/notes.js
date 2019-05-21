@@ -43,16 +43,9 @@ app.route('/new_note')
     db.serialize(() => {
       db.run('CREATE TABLE IF NOT EXISTS notes (noteName text, noteText text, user char(20), tags char(20), likes tinyint, tagsCount tinyint)');
       let stmt = db.prepare('INSERT INTO notes (noteName,noteText) VALUES (?,?)', req.body.noteName, req.body.noteText);
-     // updateTagsCount(req.body.noteName);
       stmt.run();
       stmt.finalize();
       res.send('Ваша заметка '+req.body.noteName+' успешно сохранена');
     });
   });
-/*
-  function updateTagsCount(noteName) {
-    db.serialize(() => {
-      db.run('UPDATE notes SET tagsCount=tagsCount+1 WHERE noteName=?',noteName);
-    });
-  }
-*/
+
