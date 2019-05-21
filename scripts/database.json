@@ -1,0 +1,16 @@
+{
+  "dev": {
+    "driver": "sqlite3",
+    "filename": "~/stagirovka/notes/db/users_db.sqlite"
+  },
+  "test": {
+    "driver": "sqlite3",
+    "filename": ":memory:"
+  },
+  "prod": {
+    "driver": "sqlite3",
+    "user": "lodoss",
+    "password": "q1q1"
+  },
+  "sql-file": true
+}
