@@ -20,15 +20,9 @@ app.post('/new_user.html', urlencodedParser, (req, res) => {
   if (req.body.userName && req.body.familyName && req.body.name && req.body.email) {
     db.run('INSERT INTO users VALUES (?,?,?,?,?,?,?,?)', req.body.userName, req.body.familyName, req.body.name, req.body.patronymic, req.body.birthday, req.body.email, req.body.mobileNumber, 0);
     res.send('Пользователь ' + req.body.userName + ' успешно зарегистрирован<br><a href="/main.html">на главную</a>');
-    //db.close();
   }
   else res.redirect('back');
 });
-/*
-app.get('/my_notes', (req, res) => res.send(myNotes));
-app.get('/features', (req, res) => res.send(features));
-app.get('/news', (req, res) => res.send(news));
-*/
 app.post('/new_note.html', urlencodedParser, (req, res) => {
   db.run('INSERT INTO notes (noteName,noteText) VALUES (?,?)', req.body.noteName, req.body.noteText);
   res.send('Ваша заметка ' + req.body.noteName + ' успешно сохранена<br><a href="/my_notes.html">вернуться к моим заметкам</a>');
