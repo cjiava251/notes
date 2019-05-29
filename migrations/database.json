@@ -1,7 +1,0 @@
-{
-  "dev": {
-    "driver": "sqlite3",
-    "filename": "/users/lodoss/stagirovka/notes/db/users_db.sqlite"
-  },
-  "sql-file": true
-}
