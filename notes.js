@@ -24,7 +24,11 @@ app.post('/new_user.html', urlencodedParser, (req, res) => {
   else res.redirect('back');
 });
 app.post('/new_note.html', urlencodedParser, (req, res) => {
-  db.run('INSERT INTO notes (noteName,noteText) VALUES (?,?)', req.body.noteName, req.body.noteText);
-  res.send('Ваша заметка ' + req.body.noteName + ' успешно сохранена<br><a href="/my_notes.html">вернуться к моим заметкам</a>');
+  if (req.body.noteName && req.body.noteText) {
+    db.run('INSERT INTO notes (noteName,noteText) VALUES (?,?)', req.body.noteName, req.body.noteText);
+    res.send('Ваша заметка ' + req.body.noteName + ' успешно сохранена<br><a href="/my_notes.html">вернуться к моим заметкам</a>');
+  }
+  else
+    res.redirect('/my_notes.html');
 });
 
