@@ -30,10 +30,23 @@ app.post('/new_user.html', urlencodedParser, (req, res) => {
 
 app.post('/new_note.html', urlencodedParser, (req, res) => {
   if (req.body.noteName && req.body.noteText) {
-    db.run('INSERT INTO notes (noteName,noteText) VALUES (?,?)', req.body.noteName, req.body.noteText);
+    db.run('INSERT INTO notes (noteName,noteText,likes,tagsCount) VALUES (?,?,?,?)', req.body.noteName, req.body.noteText,0,0);
     res.send('Ваша заметка ' + req.body.noteName + ' успешно сохранена<br><a href="/my_notes.html">вернуться к моим заметкам</a>');
   }
   else
     res.redirect('/new_note.html');
 });
 
+
+/*
+app.get('/new_page', (req,res) => {
+  let data=[];
+  db.all('SELECT * FROM notes', function(err,notes) {
+    if (err) throw err;
+    else {
+      data=notes;
+      res.send('Заметка '+data[0].noteName+': <br>'+data[0].noteText);
+    }
+  });
+});
+*/
