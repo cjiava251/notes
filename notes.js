@@ -34,6 +34,6 @@ app.post('/new_note.html', urlencodedParser, (req, res) => {
     res.send('Ваша заметка ' + req.body.noteName + ' успешно сохранена<br><a href="/my_notes.html">вернуться к моим заметкам</a>');
   }
   else
-    res.redirect('/my_notes.html');
+    res.redirect('/new_note.html');
 });
 

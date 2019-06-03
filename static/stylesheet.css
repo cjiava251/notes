@@ -2,7 +2,7 @@
   padding: 5px;
   border: 1px solid;
   width: 500px;
-  height: 60px;
+  height: 30px;
 }
 .star {
   color: red;
@@ -17,4 +17,30 @@ h1 {
 }
 h2 {
     color: grey;
+}
+
+#features {
+  color: red;
+  background-color: springgreen;
+}
+
+#main {
+  color: red;
+  background-color: springgreen;
+}
+#news {
+  color: red;
+  background-color: springgreen;
+}
+#newUser {
+  color: red;
+  background-color: springgreen;
+}
+#myNotes {
+  color: red;
+  background-color: springgreen;
+}
+#newUser {
+  color: red;
+  background-color: springgreen;
 }
