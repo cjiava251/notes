@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<title>Новый пользователь</title>
+
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="css/stylesheet.css">
+</head>
+
+<body>
+    <div class="navigation">
+        <a href="/">Главная </a>|
+        <a href="/features.html">Особенности </a>|
+        <a href="/news.html">Новости </a>|
+        <a href="/my_notes.html">Мои заметки </a>|
+        <a href="/new_user.html" id="newUser">Новый пользователь</a>
+      </div>
+  <h1>Новый пользователь</h1>
+  <form action="" method="POST">
+    <p>Имя пользователя <span class="star">*</span></p>
+    <input type="text" size=40 id="userName" name="userName" placeholder="никнейм">
+    <p>Фамилия <span class="star">*</span></p>
+    <input type="text" size="40" id="familyName" name="familyName" placeholder="фамилия">
+    <p>Имя <span class="star">*</span></p>
+    <input type="text" size="40" id="name" name="name" placeholder="имя">
+    <p>Отчество</p>
+    <input type="text" size="40" id="patronymic" name="patronymic" placeholder="отчество">
+    <p>Дата рождения</p>
+    <input type="date" size="40" id="birthday" name="birthday" placeholder="дд/мм/гггг">
+    <p>Email <span class="star">*</span></p>
+    <input type="text" size="40" id="email" name="email" placeholder="vasya_pupkin@yandex.ru">
+    <p>Номер мобильного телефона</p>
+    <input type="date" size="40" id="mobileNumber" name="mobileNumber" maxlength="12" placeholder="+79999999999">
+    <p><input type="submit" value="Отправить данные" id="submit">
+    <input type="reset" value="Очистить">
+    </p>
+  </form>
+</body>
+
+</html>

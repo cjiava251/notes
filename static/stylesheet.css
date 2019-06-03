@@ -1,26 +1,13 @@
 .navigation {
   padding: 5px;
   border: 1px solid;
-  width: 330px;
+  width: 500px;
+  height: 30px;
 }
 .star {
   color: red;
 }
-.home {
-    color: red;
-}
-.features {
-    color: red;
-}
-.news {
-    color: red;
-}
-.myNotes {
-  color: red;
-}
-.newUser {
-  color: red;
-}
+
 p {
     color: green;
     margin-bottom: 2px;
@@ -30,4 +17,30 @@ h1 {
 }
 h2 {
     color: grey;
+}
+
+#features {
+  color: red;
+  background-color: springgreen;
+}
+
+#main {
+  color: red;
+  background-color: springgreen;
+}
+#news {
+  color: red;
+  background-color: springgreen;
+}
+#newUser {
+  color: red;
+  background-color: springgreen;
+}
+#myNotes {
+  color: red;
+  background-color: springgreen;
+}
+#newUser {
+  color: red;
+  background-color: springgreen;
 }
