@@ -13,22 +13,25 @@
         <a href="/features.html">Особенности </a>|
         <a href="/news.html">Новости </a>|
         <a href="/my_notes.html">Мои заметки </a>|
-        <a href="/new_user.html" id="newUser">Новый пользователь</a>
+        <a href="/new_user.html" id="newUser">Новый пользователь</a>|
+        <a href="/login.html">Вход</a>
       </div>
   <h1>Новый пользователь</h1>
   <form action="" method="POST">
     <p>Имя пользователя <span class="star">*</span></p>
-    <input type="text" size=40 id="userName" name="userName" placeholder="никнейм">
+    <input type="text" size=40 id="userName" name="userName" placeholder="никнейм" required autofocus>
+    <p>Пароль <span class="star">*</span></p>
+    <input type="text" size="40" id="password" name="password" placeholder="пароль" required>
     <p>Фамилия <span class="star">*</span></p>
-    <input type="text" size="40" id="familyName" name="familyName" placeholder="фамилия">
+    <input type="text" size="40" id="familyName" name="familyName" placeholder="фамилия" required>
     <p>Имя <span class="star">*</span></p>
-    <input type="text" size="40" id="name" name="name" placeholder="имя">
+    <input type="text" size="40" id="name" name="name" placeholder="имя" required>
     <p>Отчество</p>
     <input type="text" size="40" id="patronymic" name="patronymic" placeholder="отчество">
     <p>Дата рождения</p>
     <input type="date" size="40" id="birthday" name="birthday" placeholder="дд/мм/гггг">
     <p>Email <span class="star">*</span></p>
-    <input type="text" size="40" id="email" name="email" placeholder="vasya_pupkin@yandex.ru">
+    <input type="text" size="40" id="email" name="email" placeholder="vasya_pupkin@yandex.ru" required>
     <p>Номер мобильного телефона</p>
     <input type="date" size="40" id="mobileNumber" name="mobileNumber" maxlength="12" placeholder="+79999999999">
     <p><input type="submit" value="Отправить данные" id="submit">
