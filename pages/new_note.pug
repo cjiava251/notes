@@ -1,0 +1,11 @@
+include navigation.pug
+form(action="", method="post")
+  h1 Новая заметка
+  p Название
+  input(type="text" name="noteName" required autofocus)
+  p Текст
+  textarea(name="noteText", cols="100", rows="20" resize="false" required)
+  br
+  input(type="submit" value="Добавить запись")
+  input(type="reset" value="Очистить")
+

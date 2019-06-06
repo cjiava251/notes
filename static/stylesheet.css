@@ -19,28 +19,23 @@ h2 {
     color: grey;
 }
 
-#features {
+.features {
   color: red;
   background-color: springgreen;
 }
-
-#main {
+.main {
   color: red;
   background-color: springgreen;
 }
-#news {
+.news {
   color: red;
   background-color: springgreen;
 }
-#newUser {
+.newUser {
   color: red;
   background-color: springgreen;
 }
-#myNotes {
-  color: red;
-  background-color: springgreen;
-}
-#newUser {
+.myNotes {
   color: red;
   background-color: springgreen;
 }

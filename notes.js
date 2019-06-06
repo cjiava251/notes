@@ -1,110 +1,94 @@
 const express = require('express');
-
 const app = express();
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const mustache=require('mustache');
-const fs=require('fs');
-
+const pug = require('pug');
+app.set('views', './pages');
+app.set('view engine', 'pug');
 const port = 3000;
-const bodyParser = require('body-parser');
-
-const urlencodedParser = bodyParser.urlencoded({ extended: false });
-const db = new sqlite3.Database('./db/users_db.sqlite3');
-db.serialize(() => {
-  db.run('CREATE TABLE IF NOT EXISTS users (userName char(20), password char(20), familyName char(20), name char(20), patronymic char(20), birthday date, email char(20), mobileNumber char(11), notesCount tinyint)');
-  db.run('CREATE TABLE IF NOT EXISTS notes (noteName text, noteText text, user char(20), tags char(20), likes tinyint, tagsCount tinyint)');
-});
-const pathHtml = path.join(__dirname, 'html');
-/*
-const options = {
-  index: 'main.html',
-  redirect: false,
-};
-*/
-const htmlOptions = {
-  root: pathHtml,
-  headers: {
-    'x-sent': true,
+const urlencodedParser = require('body-parser').urlencoded({ extended: false });
+const knex = require('knex')({
+  client: 'sqlite3',
+  connection: {
+    filename: './db/users_db.sqlite3'
   },
-};
-app.use('/css', express.static('static'));
-app.use('/', express.static('html'));
-app.get('/login', (req, res) => {
-  res.sendFile('login.html', htmlOptions, (err) => {
-    if (err) throw err;
-  });
-});
-app.get('/', (req, res) => {
-  res.sendFile('main.html', htmlOptions, (err) => {
-    if (err) throw err;
-  });
-});
-app.get('/features', (req, res) => {
-  fs.readFile('html/features.html',(err,data) => {
-    if (err) throw err;
-    else {
-      let out=mustache.render(data.toString(),'~/stagirovka/notes/partials/navigation.mustache',{feature: "feature"});
-      res.send(out);
-      console.log(out);
-    }
-  });
-  
-  /*
-  res.sendFile('features.html', htmlOptions, (err) => {
-    if (err) throw err;
-  });
-  */
-});
-app.get('/news', (req, res) => {
-  res.sendFile('news.html', htmlOptions, (err) => {
-    if (err) throw err;
-  });
-});
-app.get('/new_note', (req, res) => {
-  res.sendFile('new_note.html', htmlOptions, (err) => {
-    if (err) throw err;
-  });
-});
-app.get('/my_notes', (req, res) => {
-  res.sendFile('my_notes.html', htmlOptions, (err) => {
-    if (err) throw err;
-  });
-});
-app.get('/new_user', (req, res) => {
-  res.sendFile('new_user.html', htmlOptions, (err) => {
-    if (err) throw err;
-  });
+  useNullAsDefault: true
 });
 
-app.listen(port);
+knex.schema.hasTable('users')
+  .then((exists) => {
+    if (!exists)
+      return knex.schema.createTable('users', (table) => {
+        table.string('userName', 20);
+        table.string('password', 20);
+        table.string('familyName', 20);
+        table.string('name', 20);
+        table.string('patronymic', 20);
+        table.date('birthday');
+        table.string('email', 20);
+        table.string('mobileNumber', 12);
+        table.integer('notesCount', 10);
+      });
+  });
+
+knex.schema.hasTable('notes')
+  .then((exists) => {
+    if (!exists)
+      return knex.schema.createTable('notes', (table) => {
+        table.string('noteName', 40);
+        table.text('noteText');
+        table.string('user', 20);
+        table.enu('tags', []);
+        table.integer('likes', 10);
+        table.integer('tagsCount', 10);
+      });
+  });
+
+app.use('/css', express.static('static'));
+app.use('/', express.static('pages'));
+app.get('/', (req, res) => res.render('main', { main: "main", title: "Главная" }));
+app.get('/login', (req, res) => res.render('login', { login: "login", title: "Вход" }));
+app.get('/features', (req, res) => res.render('features', { features: "features", title: "Особенности" }));
+app.get('/news', (req, res) => res.render('news', { news: "news", title: "Новости" }));
+app.get('/new_note', (req, res) => res.render('new_note', { newNote: "newNote", title: "Новая заметка" }));
+app.get('/my_notes', (req, res) => res.render('my_notes', { myNotes: "myNotes", title: "Мои заметки" }));
+app.get('/new_user', (req, res) => res.render('new_user', { newUser: "newUser", title: "Новый пользователь", bool: "true"}));
 
 app.post('/new_user', urlencodedParser, (req, res) => {
-  db.run('INSERT INTO users VALUES (?,?,?,?,?,?,?,?,?)', req.body.userName, req.body.password, req.body.familyName, req.body.name, req.body.patronymic, req.body.birthday, req.body.email, req.body.mobileNumber, 0);
-  res.send(`Пользователь ${req.body.userName} успешно зарегистрирован<br><a href="/">на главную</a>`);
+  const rB = req.body;
+  if (rB.password === rB.confirmPassword)
+    knex('users').insert({
+      userName: rB.userName,
+      password: rB.password,
+      familyName: rB.familyName,
+      name: rB.name,
+      patronymic: rB.patronymic,
+      birthday: rB.birthday,
+      email: rB.email,
+      mobileNumber: rB.mobileNumber
+    }).then(result => res.send(`Пользователь ${rB.userName} успешно зарегистрирован<br><a href="/">на главную</a>`));
+  else
+    res.render('new_user', {newUser: "newUser", title: "Новый пользователь"})
 });
 
 app.post('/new_note', urlencodedParser, (req, res) => {
-  db.run('INSERT INTO notes (noteName,noteText,likes,tagsCount) VALUES (?,?,?,?)', req.body.noteName, req.body.noteText, 0, 0);
-  res.send(`Ваша заметка ${req.body.noteName} успешно сохранена<br><a href="/my_notes">вернуться к моим заметкам</a>`);
+  const rB = req.body;
+  knex('notes').insert({
+    noteName: rB.noteName,
+    noteText: rB.noteText
+  }).then((result) => res.send(`Ваша заметка ${req.body.noteName} успешно сохранена<br><a href="/my_notes">вернуться к моим заметкам</a>`));
 });
 
 app.post('/login', urlencodedParser, (req, res) => {
+  /*
   db.each('SELECT userName,password FROM users', (err, user) => {
     if (err) res.status(404).send('что то пошло не так...');
     else if ((req.body.userName === user.userName) && (req.body.password === user.password)) res.send(`Welcome, ${user.userName}<br><a href="/">на главную</a>`);
     else { res.send('Такого пользователя не существует. <div><a href="/login">назад</a></div><div><a href="/">на главную</a></div>'); }
   });
+  */
 });
-/*
-app.get('/new_page', (req,res) => {
-  let data=[];
-  db.all('SELECT * FROM notes', function(err,notes) {
-    if (err) throw err;
-    else {
-      data=notes;
-      res.send('Заметка '+data[0].noteName+': <br>'+data[0].noteText);
-    }
-  });
+
+app.get('/new_page', (req, res) => {
+  knex.select().table('notes').then((result) => res.send(result[0].noteName))
 });
-*/
+
+app.listen(port);

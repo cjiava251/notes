@@ -1,0 +1,26 @@
+include navigation.pug
+h1 Новый пользователь
+
+form(action="", method="post")
+  p Имя пользователя <span class="star">*</span>
+  input(type="text" size="40" name="userName" placeholder="никнейм" required autofocus)
+  p Пароль <span class="star">*</span>
+  input(type="password" size="40" name="password" placeholder="пароль" required)
+  p Повторите пароль <span class="star">*</span>
+  input(type="password" size="40" name="confirmPassword" required) 
+  span(hidden=bool) Вы неверно повторили пароль
+  p Фамилия <span class="star">*</span>
+  input(type="text" size="40" name="familyName" placeholder="фамилия" required)
+  p Имя <span class="star">*</span>
+  input(type="text" size="40" name="name" placeholder="имя" required)
+  p Отчество
+  input(type="text" size="40" name="patronymic" placeholder="отчество")
+  p Дата рождения
+  input(type="date" size="40" name="birthday" placeholder="дд/мм/гггг")
+  p Email <span class="star">*</span>
+  input(type="text" size="40" name="email" placeholder="myemail@mail.ru" required)
+  p Номер мобильного телефона
+  input(type="text" size="40" name="mobileNumber" maxlength="12" placeholder="+79999999999")
+  br
+  input(type="submit" value="Отправить данные" id="submit")
+  input(type="reset" value="Очистить")
