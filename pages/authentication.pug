@@ -1,0 +1,9 @@
+include navigation.pug
+h1 Вход в аккаунт
+form(action="", method="post")
+  p Имя пользователя
+  input(type="text" size="40" name="userName" placeholder="имя пользователя" required autofocus)
+  p Пароль
+  input(type="password" size="40" name="password" placeholder="пароль" required)
+  br
+  input(type="submit" value="Вход")
