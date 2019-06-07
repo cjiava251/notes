@@ -1,0 +1,12 @@
+include navigation.pug
+h2 Заметка № #{num}
+h3 #{noteName}
+p #{noteText}
+p Количество лайков: #{likes}
+div(hidden) Теги:
+br
+form(action="", method="post")
+  input(type="submit", value="Мне нравится", name="like")
+  input(type="submit", value="Добавить тег", name="tag")
+  br
+  input(type="text" size="40" name="hashtag" hidden=bool autofocus)
