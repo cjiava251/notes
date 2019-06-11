@@ -14,6 +14,13 @@ function like(like) {
   if (like === null) return 0;
   return like;
 }
+
+let user = {
+  userName: 'user1',
+  password: 'pass1',
+  notesCount: 0
+}
+
 app.set('views', './pages');
 app.set('view engine', 'pug');
 app.use('/css', express.static('static'));
@@ -47,32 +54,40 @@ const knex = require('knex')({
 });
 
 knex.schema.hasTable('users')
-  .then((exists) => {
+  .then(exists => {
     if (!exists)
-      return knex.schema.createTable('users', (table) => {
-        table.string('userName', 20);
-        table.string('password', 20);
-        table.string('familyName', 20);
-        table.string('name', 20);
-        table.string('patronymic', 20);
+      return knex.schema.createTable('users', table => {
+        table.string('userName');
+        table.string('password');
+        table.string('familyName');
+        table.string('name');
+        table.string('patronymic');
         table.date('birthday');
-        table.string('email', 20);
-        table.string('mobileNumber', 12);
-        table.integer('notesCount', 10);
+        table.string('email');
+        table.string('mobileNumber');
+        table.integer('notesCount');
+      });
+  });
+knex.schema.hasTable('notes')
+  .then(exists => {
+    if (!exists)
+      return knex.schema.createTable('notes', table => {
+        table.increments('id');
+        table.string('noteName');
+        table.text('noteText');
+        table.string('user');
+        table.integer('likes');
+        table.integer('tagsCount');
       });
   });
 
-knex.schema.hasTable('notes')
-  .then((exists) => {
+knex.schema.hasTable('tags')
+  .then(exists => {
     if (!exists)
-      return knex.schema.createTable('notes', (table) => {
-        table.increments('id');
-        table.string('noteName', 40);
-        table.text('noteText');
-        table.string('user', 20);
-        table.enu('tags', []);
-        table.integer('likes', 10);
-        table.integer('tagsCount', 10);
+      return knex.schema.createTable('tags', table => {
+        table.string('tagText');
+        table.string('noteName');
+        table.string('user');
       });
   });
 app.get('/', (req, res) => res.render('main', { main: "main", title: "Главная", style: "css/stylesheet.css" }));
@@ -81,15 +96,16 @@ app.get('/features', (req, res) => res.render('features', { features: "features"
 app.get('/news', (req, res) => res.render('news', { news: "news", title: "Новости", style: "css/stylesheet.css" }));
 app.get('/new_note', (req, res) => res.render('new_note', { newNote: "newNote", title: "Новая заметка", style: "css/stylesheet.css" }));
 app.get('/my_notes', (req, res) => {
-  knex.select('noteName', 'id').from('notes').then(notes => {
-    res.render('my_notes', { myNotes: "myNotes", title: "Мои заметки", item: notes, length: notes.length, style: "css/stylesheet.css" });
+  knex.select('noteName', 'id', 'tags').from('notes').then(notes => {
+    console.log(notes)
+    res.render('my_notes', { myNotes: "myNotes", title: "Мои заметки", notes: notes, style: "css/stylesheet.css" });
   });
 });
 app.get('/new_user', (req, res) => res.render('new_user', { newUser: "newUser", title: "Новый пользователь", bool: "true", style: "css/stylesheet.css" }));
 app.get('/authentication', (req, res) => res.render('authentication', { login: "login", title: "Вход", style: "css/stylesheet.css" }));
 app.get('/my_notes/:id', (req, res) => {
-  knex.select('noteName', 'noteText', 'id', 'likes').from('notes').where('id', req.params.id).then(note => {
-    res.render('note', { title: "Заметка №" + note[0].id, num: note[0].id, noteName: note[0].noteName, noteText: note[0].noteText, style: "../css/stylesheet.css", likes: like(note[0].likes), bool : "true" });
+  knex.select('noteName', 'noteText', 'id', 'likes', 'tags').from('notes').where('id', req.params.id).then(note => {
+    res.render('note', { title: "Заметка №" + note[0].id, note: note[0], style: "../css/stylesheet.css", likes: like(note[0].likes), bool1: "true", bool2: "true", bool3: "true" });
   });
 });
 
@@ -105,7 +121,7 @@ app.post('/new_user', urlencodedParser, (req, res) => {
       birthday: rB.birthday,
       email: rB.email,
       mobileNumber: rB.mobileNumber
-    }).then(result => res.send(`Пользователь ${rB.userName} успешно зарегистрирован<br><a href="/">на главную</a>`));
+    }).then(() => res.send(`Пользователь ${rB.userName} успешно зарегистрирован<br><a href="/">на главную</a>`));
   else
     res.render('new_user', { newUser: "newUser", title: "Новый пользователь" })
 });
@@ -115,7 +131,7 @@ app.post('/new_note', urlencodedParser, (req, res) => {
   knex('notes').insert({
     noteName: rB.noteName,
     noteText: rB.noteText,
-  }).then(result => res.send(`Ваша заметка ${req.body.noteName} успешно сохранена<br><a href="/my_notes">вернуться к моим заметкам</a>`));
+  }).then(() => res.send(`Ваша заметка ${req.body.noteName} успешно сохранена<br><a href="/my_notes">вернуться к моим заметкам</a>`));
 });
 
 app.post('/authentication', urlencodedParser, (req, res) => {
@@ -123,17 +139,43 @@ app.post('/authentication', urlencodedParser, (req, res) => {
 });
 
 app.post('/my_notes/:id', urlencodedParser, (req, res) => {
+
+  function renderPage(likes,hidden='false',tags='') {
+    knex.select('noteName', 'noteText', 'id', 'likes', tags).from('notes').where('id', req.params.id).then(note => {
+      res.render('note', { title: "Заметка №" + note[0].id, note: note[0], style: "../css/stylesheet.css", likes: like(likes), bool: hidden });
+    });
+  }
+
   const rB = req.body;
   if (rB.like) {
     knex('notes').where({ id: req.params.id }).increment({ likes: 1 }).then(likes => {
-      console.log(likes);
+      renderPage(likes,true);
+      /*
       knex.select('noteName', 'noteText', 'id', 'likes').from('notes').where('id', req.params.id).then(note => {
-        res.render('note', { title: "Заметка №" + note[0].id, num: note[0].id, noteName: note[0].noteName, noteText: note[0].noteText, style: "../css/stylesheet.css", likes: like(likes), bool : "true" });
+        res.render('note', { title: "Заметка №" + note[0].id, note: note[0], style: "../css/stylesheet.css", likes: like(likes), bool1: "true", bool2: "true", bool3: "true" });
       });
+      */
     });
   }
-  else {
-    res.send('2');
+  else if (rB.tag) {
+    renderPage()
+    /*
+    knex.select('noteName', 'noteText', 'id', 'likes').from('notes').where('id', req.params.id).then(note => {
+      res.render('note', { title: "Заметка №" + note[0].id, note: note[0], style: "../css/stylesheet.css", likes: like(note[0].likes) });
+    });
+    */
+  }
+  else if (rB.cancel) {
+    knex.select('noteName', 'noteText', 'id', 'likes').from('notes').where('id', req.params.id).then(note => {
+      res.render('note', { title: "Заметка №" + note[0].id, note: note[0], style: "../css/stylesheet.css", likes: like(note[0].likes), bool1: "true", bool2: "true", bool3: "true" });
+    });
+  }
+  else if (rB.addTag) {
+    knex('notes').update({ tags: rB.hashtag }).then(tag => {
+      knex.select('noteName', 'noteText', 'id', 'likes', 'tags').from('notes').where('id', req.params.id).then(note => {
+        res.render('note', { title: "Заметка №" + note[0].id, note: note[0], style: "../css/stylesheet.css", likes: like(note[0].likes), bool1: "true", bool2: "true", bool3: "true" });
+      })
+    });
   }
 });
 

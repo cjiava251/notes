@@ -1,12 +1,20 @@
+include header.pug
 include navigation.pug
-h2 Заметка № #{num}
-h3 #{noteName}
-p #{noteText}
+h2 Заметка № #{note.id}
+h3 #{note.noteName}
+p #{note.noteText}
 p Количество лайков: #{likes}
-div(hidden) Теги:
+div Теги:
+if (note.length)
+  - for (let i=0;i<note.length;i++)
+    div #{note.tags[i]}
+else
+  div пока тегов нету
 br
-form(action="", method="post")
-  input(type="submit", value="Мне нравится", name="like")
-  input(type="submit", value="Добавить тег", name="tag")
+form(action="" method="post")
+  input(type="submit" value="Мне нравится" name="like")
+  input(type="submit" value="Добавить тег" name="tag")
   br
   input(type="text" size="40" name="hashtag" hidden=bool autofocus)
+  input(type="submit" value="Добавить" name="addTag" hidden=bool)
+  input(type="submit" value="Отмена" name="cancel" hidden=bool)
