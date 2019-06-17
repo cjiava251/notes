@@ -3,18 +3,29 @@ include navigation.pug
 h2 Заметка № #{note.id}
 h3 #{note.noteName}
 p #{note.noteText}
-p Количество лайков: #{likes}
-div Теги:
-if (note.length)
-  - for (let i=0;i<note.length;i++)
-    div #{note.tags[i]}
+span Количество лайков:
+if (likes!=undefined)
+  span #{likes}
 else
-  div пока тегов нету
+  span 0
+
+div Теги:
+if (tags.length)
+  -for (let i=0;i<tags.length;i++)
+    div #{tags[i].tagText}
+else
+  div пока тегов нет
+
 br
 form(action="" method="post")
   input(type="submit" value="Мне нравится" name="like")
   input(type="submit" value="Добавить тег" name="tag")
+  input(type="submit" value="Удалить тег" name="delete")
   br
   input(type="text" size="40" name="hashtag" hidden=bool autofocus)
   input(type="submit" value="Добавить" name="addTag" hidden=bool)
   input(type="submit" value="Отмена" name="cancel" hidden=bool)
+  input(type="text" size="40" name="deletingTag" hidden=bool2 autofocus)
+  input(type="submit" value="Удалить" name="deleteTag" hidden=bool2)
+  input(type="submit" value="Отмена" name="cancel" hidden=bool2)
+
