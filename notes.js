@@ -1,5 +1,4 @@
 const express = require('express');
-
 const app = express();
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
@@ -13,7 +12,7 @@ config.redisStore = {
 };
 
 const user = {
-  userName: 'user123',
+  userName: 'user1',
   password: 'pass1',
   notesCount: 0,
 };
@@ -101,12 +100,12 @@ knex.schema.hasTable('tags')
       });
     }
   });
+
 knex.schema.hasTable('likes')
   .then((exists) => {
     if (!exists) {
       return knex.schema.createTable('likes', (table) => {
         table.integer('noteId');
-        table.integer('count');
         table.string('user');
         table.boolean('liked');
       });
@@ -163,14 +162,16 @@ app.post('/my_notes/:id', urlencodedParser, (req, res) => {
   const rB = req.body;
   const rP = req.params;
   if (rB.like) {
-    knex('likes').select('user').where({ noteId: rP.id }).then((users) => {
-      if (users.every(usr => usr.user !== user.userName)) {
-        knex('likes').insert({ noteId: rP.id, user: user.userName, liked: true });
-        knex('notes').increment('likes', 1).where({ user: user.userName });
-        renderPage(req, res, true, true);
+    knex('likes').select('*').where({user: user.userName, noteId: rP.id}).then(usr => {
+      if (usr[0]===undefined) {
+        knex('likes').insert({liked: true, user: user.userName, noteId: rP.id}).then(() => 
+          knex('notes').increment('likes',1).where({id: rP.id}).then(() => renderPage(req,res,true,true))
+        ); 
       }
+      else renderPage(req,res,true,true);    
     });
-  } else if (rB.tag) renderPage(req, res, false, true);
+  } 
+  else if (rB.tag) renderPage(req, res, false, true);
   else if (rB.cancel) renderPage(req, res, true, true);
   else if (rB.addTag) {
     knex('notes').select('noteName', 'likes').where({ id: rP.id }).then(note => knex('tags').insert({
