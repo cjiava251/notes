@@ -1,9 +1,11 @@
 const express = require('express');
+
 const app = express();
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
+const urlencodedParser = require('body-parser').urlencoded({ extended: false });
 
 const config = {};
 config.redisStore = {
@@ -12,9 +14,10 @@ config.redisStore = {
 };
 
 const user = {
-  userName: 'user1',
+  userName: 'user12',
   password: 'pass1',
   notesCount: 0,
+  id: 5
 };
 
 const knex = require('knex')({
@@ -25,12 +28,18 @@ const knex = require('knex')({
   useNullAsDefault: true,
 });
 
-function renderPage(req, res, hidden = 'true', hiddenDel = 'true') {
-  knex('notes').select('*').where('id', req.params.id).then(note => knex('tags').select('*').where('noteId', req.params.id).then((tag) => {
-    res.render('note', {
-      title: `Заметка №${note[0].id}`, note: note[0], style: '../css/stylesheet.css', bool: hidden, bool2: hiddenDel, tags: tag, likes: note[0].likes,
-    });
-  }));
+function renderNotePage(req, res, hiddenAdd = 'true', hiddenDel = 'true') {
+  knex('notes').select().where({ id: req.params.noteId })
+    .then(note => knex('tags').select('tagText').where({ noteId: note[0].id, userId: req.params.userId })
+      .then(tag => res.render('note', {
+        title: `Заметка № ${note[0].id}`,
+        note: note[0],
+        style: '../css/stylesheet.css',
+        bool1: hiddenAdd,
+        bool2: hiddenDel,
+        tags: tag
+      }))
+    );
 }
 
 app.set('views', './pages');
@@ -56,132 +65,98 @@ passport.use(new LocalStrategy(
   },
 ));
 
-const urlencodedParser = require('body-parser').urlencoded({ extended: false });
-
-
-knex.schema.hasTable('users')
-  .then((exists) => {
-    if (!exists) {
-      return knex.schema.createTable('users', (table) => {
-        table.string('userName');
-        table.string('password');
-        table.string('familyName');
-        table.string('name');
-        table.string('patronymic');
-        table.date('birthday');
-        table.string('email');
-        table.string('mobileNumber');
-        table.integer('notesCount');
-      });
-    }
-  });
-knex.schema.hasTable('notes')
-  .then((exists) => {
-    if (!exists) {
-      return knex.schema.createTable('notes', (table) => {
-        table.increments('id');
-        table.string('noteName');
-        table.text('noteText');
-        table.string('user');
-        table.integer('likes');
-        table.integer('tagsCount');
-      });
-    }
-  });
-
-knex.schema.hasTable('tags')
-  .then((exists) => {
-    if (!exists) {
-      return knex.schema.createTable('tags', (table) => {
-        table.string('tagText');
-        table.string('noteName');
-        table.integer('noteId');
-        table.string('user');
-      });
-    }
-  });
-
-knex.schema.hasTable('likes')
-  .then((exists) => {
-    if (!exists) {
-      return knex.schema.createTable('likes', (table) => {
-        table.integer('noteId');
-        table.string('user');
-        table.boolean('liked');
-      });
-    }
-  });
 app.get('/', (req, res) => res.render('main', { main: 'main', title: 'Главная', style: 'css/stylesheet.css' }));
 app.get('/login', (req, res) => res.render('login', { login: 'login', title: 'Вход', style: 'css/stylesheet.css' }));
 app.get('/features', (req, res) => res.render('features', { features: 'features', title: 'Особенности', style: 'css/stylesheet.css' }));
 app.get('/news', (req, res) => res.render('news', { news: 'news', title: 'Новости', style: 'css/stylesheet.css' }));
-app.get('/new_note', (req, res) => res.render('new_note', { newNote: 'newNote', title: 'Новая заметка', style: 'css/stylesheet.css' }));
-app.get('/my_notes', (req, res) => knex.select('noteName', 'id').from('notes').then((notes) => {
-  res.render('my_notes', {
-    myNotes: 'myNotes', title: 'Мои заметки', notes, style: 'css/stylesheet.css',
+app.get('/user/:userId/notes', (req, res) => {
+  if (req.params.userId == user.id)
+    knex('notes').select('noteName', 'id')
+      .then(notes => {
+        res.render('my_notes', { myNotes: "myNotes", title: 'Мои заметки', notes: notes, style: 'css/stylesheet.css', userId: user.id })
+      });
+  else
+    res.redirect('/temp');
+});
+app.route('/user/:userId/new_note')
+  .get((req, res) => res.render('new_note', { newNote: 'newNote', title: 'Новая заметка', style: 'css/stylesheet.css' }))
+  .post(urlencodedParser, (req, res) => {
+    const rB = req.body, rP = req.params;
+    knex('notes').insert({
+      userId: user.id,
+      noteName: rB.noteName,
+      noteText: rB.noteText,
+      likesCount: 0,
+      tagsCount: 0,
+    }).then(() => res.send(`Ваша заметка ${rB.noteName} успешно сохранена<br><a href="/user/${rP.userId}/notes">вернуться к моим заметкам</a>`));
   });
-}));
-app.get('/new_user', (req, res) => res.render('new_user', {
-  newUser: 'newUser', title: 'Новый пользователь', bool: 'true', style: 'css/stylesheet.css',
-}));
-app.get('/authentication', (req, res) => res.render('authentication', { login: 'login', title: 'Вход', style: 'css/stylesheet.css' }));
-app.get('/my_notes/:id', (req, res) => renderPage(req, res, true, true));
+app.route('/user/:userId/notes/:noteId')
+  .get((req, res) => renderNotePage(req, res))
+  .post(urlencodedParser, (req, res) => {
+    const rP = req.params, rB = req.body;
+    if (rB.like) {
+      knex('likes').select().where({ userId: rP.userId, noteId: rP.noteId }).then(usr => {
+        if (usr[0] === undefined) {
+          knex('likes').insert({ userId: rP.userId, noteId: rP.noteId }).then(() =>
+            knex('notes').increment('likesCount', 1).where({ id: rP.noteId }).then(() => renderNotePage(req, res)));
+        } else {
+          knex('likes').where({ userId: rP.userId, noteId: rP.noteId }).del().then(() =>
+            knex('notes').decrement('likesCount', 1).where({ id: rP.noteId }).then(() => renderNotePage(req, res))
+          )
+        }
+      });
+    }
+  })
+  .post(urlencodedParser, (req, res) => {
+    if (req.body.tag) renderNotePage(req, res, false);
+  })
+  .post(urlencodedParser, (req, res) => {
+    if (req.body.cancel) renderNotePage(req, res);
+  })
+  .post(urlencodedParser, (req, res) => {
+    const rP = req.params, rB = req.body;
+    if (rB.addTag)
+      knex('tags').insert({ tagText: rB.hashtag, noteId: rP.noteId, userId: rP.userId })
+        .then(() => renderNotePage(req, res));
+  })
+  .post(urlencodedParser, (req, res) => {
+    if (req.body.delete) renderNotePage(req, res, true, false);
+  })
+  .post(urlencodedParser, (req, res) => {
+    if (req.body.deleteTag) {
+      knex('tags').where({ tagText: req.body.deletingTag, userId: req.params.userId })
+        .del().then(() => renderNotePage(req, res));
+    }
+  });
 
-app.post('/new_user', urlencodedParser, (req, res) => {
-  const rB = req.body;
-  if (rB.password === rB.confirmPassword) {
-    knex('users').insert({
-      userName: rB.userName,
-      password: rB.password,
-      familyName: rB.familyName,
-      name: rB.name,
-      patronymic: rB.patronymic,
-      birthday: rB.birthday,
-      email: rB.email,
-      mobileNumber: rB.mobileNumber,
-    }).then(() => res.send(`Пользователь ${rB.userName} успешно зарегистрирован<br><a href="/">на главную</a>`));
-  } else res.render('new_user', { newUser: 'newUser', title: 'Новый пользователь' });
+app.route('/new_user')
+  .get((req, res) =>
+    res.render('new_user', {
+      newUser: 'newUser', title: 'Новый пользователь', bool: 'true', style: 'css/stylesheet.css'
+    })
+  )
+  .post(urlencodedParser, (req, res) => {
+    const rB = req.body;
+    if (rB.password === rB.confirmPassword) {
+      knex('users').insert({
+        userName: rB.userName,
+        password: rB.password,
+        familyName: rB.familyName,
+        name: rB.name,
+        patronymic: rB.patronymic,
+        birthday: rB.birthday,
+        email: rB.email,
+        mobileNumber: rB.mobileNumber,
+      }).then(() => res.send(`Пользователь ${rB.userName} успешно зарегистрирован<br><a href="/">на главную</a>`));
+    } else res.render('new_user', { newUser: 'newUser', title: 'Новый пользователь', style: 'css/stylesheet.css' });
+  });
+
+
+app.get('/temp', (req, res) => {
+  res.send('вы не авторизованы <a href="/">на главную</a>');
 });
 
-app.post('/new_note', urlencodedParser, (req, res) => {
-  const rB = req.body;
-  knex('notes').insert({
-    noteName: rB.noteName,
-    noteText: rB.noteText,
-    likes: 0,
-    user: user.userName,
-    tagsCount: 0,
-  }).then(() => res.send(`Ваша заметка ${rB.noteName} успешно сохранена<br><a href="/my_notes">вернуться к моим заметкам</a>`));
-});
 
-app.post('/authentication', urlencodedParser, (req, res) => {
-  res.render('sdsds');
-});
-
-app.post('/my_notes/:id', urlencodedParser, (req, res) => {
-  const rB = req.body;
-  const rP = req.params;
-  if (rB.like) {
-    knex('likes').select('*').where({user: user.userName, noteId: rP.id}).then(usr => {
-      if (usr[0]===undefined) {
-        knex('likes').insert({liked: true, user: user.userName, noteId: rP.id}).then(() => 
-          knex('notes').increment('likes',1).where({id: rP.id}).then(() => renderPage(req,res,true,true))
-        ); 
-      }
-      else renderPage(req,res,true,true);    
-    });
-  } 
-  else if (rB.tag) renderPage(req, res, false, true);
-  else if (rB.cancel) renderPage(req, res, true, true);
-  else if (rB.addTag) {
-    knex('notes').select('noteName', 'likes').where({ id: rP.id }).then(note => knex('tags').insert({
-      tagText: rB.hashtag, noteName: note.noteName, noteId: rP.id, user: user.userName,
-    }).then(() => renderPage(req, res, true, true)));
-  } else if (rB.delete) {
-    renderPage(req, res, true, false);
-  } else if (rB.deleteTag) {
-    knex('tags').where({ tagText: rB.deletingTag, user: user.userName }).del().then(() => renderPage(req, res, true, true));
-  }
-});
+// knex('notes').select('tagsCount').then(tag => console.log(tag))
 
 app.listen(3000);
