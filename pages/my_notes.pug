@@ -1,8 +1,10 @@
 include header.pug
 include navigation.pug
 h1 Мои заметки
+if (notes.length)
 - for (let i=0;i<notes.length;i++)  
-  a(href="/my_notes/"+ notes[i].id) #{notes[i].noteName}
+  a(href="/user/"+ userId+"/notes/"+notes[i].id) #{notes[i].noteName}
   br
+br
 a(href="new_note") Создать новую заметку
 

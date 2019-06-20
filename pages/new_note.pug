@@ -3,7 +3,7 @@ include navigation.pug
 form(action="", method="post")
   h1 Новая заметка
   p Название
-  input(type="text" name="noteName" required autofocus)
+  input(type="text" name="noteName" required autofocus autocomplete="off")
   p Текст
   textarea(name="noteText", cols="100", rows="20" resize="false" required)
   br

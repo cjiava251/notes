@@ -1,7 +1,7 @@
 .navigation {
   padding: 5px;
   border: 1px solid;
-  width: 500px;
+  width: 520px;
   height: 30px;
 }
 .star {
@@ -14,6 +14,7 @@ p {
 }
 h1 {
     color: blue;
+    margin: 0;
 }
 h2 {
     color: grey;
